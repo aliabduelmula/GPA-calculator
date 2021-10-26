@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<style>
+  .popup{
+    width: 100%;
+    height: 100%;
+    visibility: hidden;
+    position: fixed;
+    overflow: auto;
+    top: 0;
+    left: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,50%);
+  }
+  .popup-content{
+    background-color: white;
+    /*top:10%;
+    width: auto;*/
+    margin: 10%;
+    position: fixed;
+    text-align: center;
+    box-shadow: 5px 5px 5px #696969;
+    border-radius: 10px;
+  }
+</style>
+    <p>
+        Add courses and years as needed and then press submit when you are done! You’ll be able to email yourself a copy of the results.
+    </p>
+
+    <script>
+        var listOfCourses = new Array();
+        var listOfYears = [0,0,0,0,0,0,0,0,0,0];
+        var listOfID = new Array();
+        var listOfTable = [false, false, false, false, false, false, false, false, false, false];
+        var counter = 0;
+        var editingCourse = -1; //stores courseID of course being edited
+        var editingRow = -1; //stores row number of row being edited
+
+        class Course{
+
+            constructor(id, name, year, semester, grade){
+                this.id = id;
+                this.name = name;
+                this.year = year;
+                this.semester = semester;
+                this.grade = grade;
+                this.c_gpa = this.calculateGPA(this.grade);
+            }
+
+            get courseID(){
+                return this.id;
+            }
+
+            get courseName(){
+                return this.name;
+            }
+
+            get courseYear(){
+                return this.year;
+            }
+
+            get courseSemester(){
+                return this.semester;
+            }
+
+            get courseGrade(){
+                return this.grade;
+            }
+
+            get courseGPA(){
+                return this.c_gpa;
+            }
+
+            set courseID(id){
+                this.id = id
+            }
+
+            set courseName(name){
+                this.name = name;
+            }
+
+            set courseYear(year){
+                this.year = year;
+            }
+
+            set courseSemester(semester){
+                this.semester = semester;
+            }
+
+            set courseGrade(grade){
+                this.grade = grade;
+            }
+
+            set courseGPA(c_gpa){
+                this.c_gpa = this.calculateGPA(c_gpa);
+            }
+
+            calculateGPA(enteredGrade) {
+                var calculatedGPA = 0;
+                if (enteredGrade >= 50 && enteredGrade <= 79){
+                    if ((enteredGrade % 10) >= 0 && (enteredGrade % 10) <= 2) calculatedGPA = 0.7 + Math.floor((enteredGrade - 50)/ 10);
+                    else if ((enteredGrade % 10) >= 3 && (enteredGrade % 10) <= 6) calculatedGPA = 1 + Math.floor((enteredGrade - 50)/ 10);
+                    else calculatedGPA = 1.3 + Math.floor((enteredGrade - 50)/ 10);
+                }
+                else if (enteredGrade >= 80 && enteredGrade <= 84) calculatedGPA = 3.7
+                else if (enteredGrade >= 85 && enteredGrade <= 89) calculatedGPA = 3.9
+                else if (enteredGrade >= 90) calculatedGPA = 4;
+                var finalCourseGPA = calculatedGPA.toFixed(2);
+                return finalCourseGPA
+            }
+        }
+
+    </script>
+
+    <div class="container h-100">
+        <div class="row h-100 justify-content-center align-items-center">
+            <div class="col-10 col-md-8 col-lg-6">
+                <form class="form-horizontal" action="" method="post" id="main-form">
+
+                    <div class="form-group form-inline" id = "form-field">
+                        <label class = "field-header">Course Year:&nbsp;&nbsp;&nbsp;</label>
+                        <input type="number" id="year-num" min="1" max = "100">
+                    </div>
+
+                    <div class="form-group form-inline" id = "form-field">
+                        <label class = "field-header">Course Name: </label>
+                        <input type="name" class="form-control" id = "name-field" name = "course-name">
+                    </div>
+
+                    <div class="form-group form-inline" id = "form-field">
+                        <label class = "field-header">Semester Taken: </label>
+                        <select class="form-control" id="semester" name="course-semester">
+                            <option>Fall/Winter</option>
+                            <option>Summer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-inline" id = "form-field">
+                        <label class = "field-header">Course Grade: </label>
+                        <input type="name" id="grade-field" name="course-grade" onkeyup="calculateGPA('grade-field','course-gpa')">
+                    </div>
+
+                    <div class="form-group form-inline" id = "form-field">
+                        <label class = "field-header">Course GPA: </label>
+                        <p id = "course-gpa" style = "font-weight: bold;"></p>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" id = "year-Btn" onclick="createCourseObject()">+Add Course</button>
+                </form>
+                <!-- Form end -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    </script>
+
+    <br>
+
+    <div id = "pop" class="popup">
+        <div id = "popchild" class="popup-content">
+            <div class="container h-100">
+                <div class="row h-100 justify-content-center align-items-center">
+                    <div class="col-10 col-md-8 col-lg-6">
+                        <form class="form-horizontal" action="" method="post" id="main-form">
+
+                            <div class="form-group form-inline" id = "form-field">
+                                <label class = "field-header">Course Year:&nbsp;&nbsp;&nbsp;</label>
+                                <input type="number" onchange="test()" id="year-num-edit" min="1" max = "100">
+                            </div>
+
+                            <div class="form-group form-inline" id = "form-field">
+                                <label class = "field-header">Course Name: </label>
+                                <input type="name" class="form-control" id = "name-field-edit" name = "course-name">
+                            </div>
+
+                            <div class="form-group form-inline" id = "form-field">
+                                <label class = "field-header">Semester Taken: </label>
+                                <select class="form-control" id="semester-edit" name="course-semester">
+                                    <option>Fall/Winter</option>
+                                    <option>Summer</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group form-inline" id = "form-field">
+                                <label class = "field-header">Course Grade: </label>
+                                <input type="name" id="grade-field-edit" name="course-grade" onkeyup="calculateGPA('grade-field-edit','course-gpa-edit')">
+                            </div>
+
+                            <div class="form-group form-inline" id = "form-field">
+                                <label class = "field-header">Course GPA: </label>
+                                <p id = "course-gpa-edit" style = "font-weight: bold;"></p>
+                            </div>
+
+                            <button type="button" class="btn btn-primary" id = "year-Btn" onclick="saveChanges()">Save Changes</button>
+                        </form>
+                        <!-- Form end -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id = "year-1-div" style="display: none;"> </div>
+    <div id = "year-2-div" style="display: none;"> </div>
+    <div id = "year-3-div" style="display: none;"> </div>
+    <div id = "year-4-div" style="display: none;"> </div>
+    <div id = "year-5-div" style="display: none;"> </div>
+    <div id = "year-6-div" style="display: none;"> </div>
+    <div id = "year-7-div" style="display: none;"> </div>
+    <div id = "year-8-div" style="display: none;"> </div>
+    <div id = "year-9-div" style="display: none;"> </div>
+    <div id = "year-10-div" style="display: none;"> </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <button type="button" class="btn btn-primary submit-Btn" id = "GPA-Btn" onclick="showGPA()">Submit</button>
+        </div>
+    <div id="totGPA">
+
+    </div>
+        <div class="col-md-6 text-center">
+            <button type="button" class="btn btn-primary" id = "year-Btn" onclick="email()">Email Results</button>
+        </div>
+    </div>
+
+    <script>
+        function createCourseObject(){
+            var currentCourse = new Course(
+                counter++,
+                document.getElementById("name-field").value,
+                document.getElementById("year-num").value,
+                document.getElementById("semester").value,
+                document.getElementById("grade-field").value);
+            listOfCourses.push(currentCourse);
+            listOfID.push(currentCourse.id);
+
+            //Add year to list of years if its not in the list
+            if(listOfYears[document.getElementById("year-num").value-1] == 0 && listOfTable[document.getElementById("year-num").value-1] == false){
+                listOfTable[document.getElementById("year-num").value-1] = true;
+                createDivForYear(document.getElementById("year-num").value);
+            }
+            listOfYears[document.getElementById("year-num").value-1]++;
+            updateTable(currentCourse);
+        }
+
+        //Creates main div with the header, table div , and table
+        function createDivForYear(year){
+            //Add the whole new div in this div
+            var yearDiv = document.getElementById("year-" + year + "-div");
+            yearDiv.style.display = "inline";
+            var br = document.createElement("br");
+            yearDiv.prepend(br);
+
+            //Creates the header and adds it to the yearDiv
+            var yearHeader = document.createElement("h4");
+            yearHeader.style.textAlign = "center";
+            yearHeader.textContent = "Year " + year + " Courses";
+            yearDiv.appendChild(yearHeader);
+
+            //Creates the div that will contain the table
+            var tableDiv = document.createElement("div");
+            tableDiv.setAttribute("class","table-responsive");
+
+            //Creates the table
+            var yearTable = document.createElement("TABLE");
+            yearTable.setAttribute("id", "year-" + year + "-table");
+            yearTable.setAttribute("class", "table table-condensed");
+            tableDiv.appendChild(yearTable);
+
+            yearDiv.appendChild(tableDiv)
+
+
+            document.getElementById("year-" + year + "-table").innerHTML =
+                '           <thead>\n' +
+                '            <tr>\n' +
+                '                <th>Name</th>\n' +
+                '                <th>Semester</th>\n' +
+                '                <th>Grade</th>\n' +
+                '                <th>Course GPA</th>\n' +
+                '                <th>Delete</th>\n' +
+                '                <th>Edit</th>\n' +
+                '                <th></th>\n' +
+                '            </tr>\n' +
+                '            </thead>';
+        }
+
+        function clearForm(){
+            document.getElementById("main-form").reset();
+        }
+
+        function updateTable(currentCourse){
+            var table = document.getElementById("year-" + currentCourse.courseYear + "-table");
+            document.getElementById("year-" + currentCourse.courseYear + "-div").style.display = "inline";
+            var rowCount = table.rows.length;
+            var row = table.insertRow(rowCount);
+            //makes the delete and edit buttons
+            var delBtn = document.createElement("BUTTON");
+            var editBtn = document.createElement("BUTTON");
+            delBtn.setAttribute("id", currentCourse.courseID);
+            delBtn.innerText = "Remove";
+            delBtn.setAttribute("onclick", "delRow(parentElement.parentElement.rowIndex, this.id)");
+            editBtn.setAttribute("id", currentCourse.courseID);
+            editBtn.innerText = "Edit";
+            editBtn.setAttribute("onclick", "editRow(parentElement.parentElement.rowIndex, this.id)");
+
+            var nameCell = row.insertCell(0);
+            var semesterCell = row.insertCell(1);
+            var gradeCell = row.insertCell(2);
+            var courseGPACell = row.insertCell(3);
+            var delCell = row.insertCell(4);
+            var editCell = row.insertCell(5);
+
+           
+            nameCell.innerHTML = currentCourse.courseName;
+            semesterCell.innerHTML = currentCourse.courseSemester;
+            gradeCell.innerHTML = currentCourse.courseGrade;
+            courseGPACell.innerHTML = currentCourse.courseGPA;
+            delCell.appendChild(delBtn);
+            editCell.appendChild(editBtn);
+
+            clearForm();
+        }
+        //function to delete a row from table
+        function delRow(rowID, courseID){
+            var cid = parseInt(courseID); 
+            var index = listOfID.indexOf(cid); // gets index of course to delete from ListOfID
+            document.getElementById("year-" + listOfCourses[index].courseYear + "-table").deleteRow(rowID); // removes row from table
+            listOfYears[listOfCourses[index].courseYear-1]--; 
+            if(listOfYears[listOfCourses[index].courseYear-1] == 0){ //deletes the whole table if there are no courses in it
+                var yearDiv = document.getElementById("year-" + listOfCourses[index].courseYear + "-div");
+                yearDiv.style.display = "none";
+            }
+            listOfCourses.splice(index,1); //deletes course from list
+            listOfID.splice(index,1); //deletes course id from list
+
+        }
+        //if clicked anywhere other than popup then thew popup closes
+        window.onclick = function(event) {
+            var pop = document.getElementById("pop");
+            if (event.target == pop) {
+              pop.style.visibility = "hidden";
+            }
+        }
+        //function to edit the row
+        function editRow(rowID, courseID){
+            var cid = parseInt(courseID); 
+            var index = listOfID.indexOf(cid); // gets index of course to delete from ListOfID
+            var course = listOfCourses[index];
+            editingCourse = course.courseID;
+            editingRow = rowID;
+            document.getElementById("year-num-edit").value = course.courseYear;
+            //document.getElementById("year-num-edit").disabled = true;
+            document.getElementById("name-field-edit").value = course.courseName;
+            document.getElementById("semester-edit").value = course.courseSemester;
+            document.getElementById("grade-field-edit").value = course.courseGrade;
+            //document.getElementById("course-gpa-edit").value = course.courseGPA;
+            calculateGPA("grade-field-edit", "course-gpa-edit");
+            var pop = document.getElementById("pop");
+            pop.style.visibility = "visible";
+        }
+
+        //function to save changes after editing
+        function saveChanges(){
+            var index = listOfID.indexOf(editingCourse); // gets index of course to delete from ListOfID
+            var course = listOfCourses[index];
+            course.courseName = document.getElementById("name-field-edit").value;
+            course.courseSemester = document.getElementById("semester-edit").value;
+            course.courseGrade = document.getElementById("grade-field-edit").value;
+            course.courseGPA = parseInt(course.courseGrade);
+            updateRow(editingRow, course);
+            editingCourse = -1;
+            editingRow = -1;
+            var pop = document.getElementById("pop");
+            pop.style.visibility = "hidden";
+
+        }
+
+        //function to update row after user changes it
+        function updateRow(rowID, course){
+            var table = document.getElementById("year-" + course.courseYear + "-table");
+            var row = table.rows[rowID];
+            row.cells[0].innerHTML = course.courseName;
+            row.cells[1].innerHTML = course.courseSemester;
+            row.cells[2].innerHTML = course.courseGrade;
+            row.cells[3].innerHTML = course.courseGPA;
+
+        }
+        //Ali function to show GPAs
+        function showGPA(){ 
+            var yearGPA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; //new array that will hold all the GPAs
+			var sumGPA = 0; //totGPA = avg gpa for all 
+			//listOfYears
+			for (var i=0; i < listOfCourses.length; i++){
+				var currGPA = parseFloat(listOfCourses[i].courseGPA);
+                sumGPA += currGPA; //pushing all the courseGPA from list of courses to allGPA
+				var currYear = parseInt(listOfCourses[i].year);
+				yearGPA[currYear - 1] += currGPA;
+
+            }
+			sumGPA = sumGPA.toFixed(2);
+			var gpalen = listOfCourses.length;
+			var avgGPA = sumGPA / gpalen;
+			avgGPA = avgGPA.toFixed(2);
+			var lastString = "All years included, the Average GPA  is: " +avgGPA;
+			for (var i=0; i < yearGPA.length; i++){
+				if (listOfYears[i] > 0){
+					var currYearGPA = yearGPA[i] / listOfYears[i];
+					currYearGPA = currYearGPA.toFixed(2);
+					var yearGPAString = "Year " + parseInt(i + 1) + " GPA: " + currYearGPA;
+					lastString = lastString.concat("<br>" + yearGPAString);
+				}
+            }
+			document.getElementById("totGPA").innerHTML = lastString;
+
+        }
+
+        function test(){
+            console.log("changed");
+        }
+        function calculateGPA(gradefield, gpafield) {
+            var enteredGrade = document.getElementById(gradefield).value;
+            var calculatedGPA = 0;
+            if (enteredGrade >= 50 && enteredGrade <= 79){
+                if ((enteredGrade % 10) >= 0 && (enteredGrade % 10) <= 2) calculatedGPA = 0.7 + Math.floor((enteredGrade - 50)/ 10);
+                else if ((enteredGrade % 10) >= 3 && (enteredGrade % 10) <= 6) calculatedGPA = 1 + Math.floor((enteredGrade - 50)/ 10);
+                else calculatedGPA = 1.3 + Math.floor((enteredGrade - 50)/ 10);
+            }
+            else if (enteredGrade >= 80 && enteredGrade <= 84) calculatedGPA = 3.7
+            else if (enteredGrade >= 85 && enteredGrade <= 89) calculatedGPA = 3.9
+            else if (enteredGrade >= 90) calculatedGPA = 4;
+            var finalCourseGPA = calculatedGPA.toFixed(1);
+            document.getElementById(gpafield).innerHTML = finalCourseGPA;
+            return finalCourseGPA;
+        }
+    </script>
+</html>
